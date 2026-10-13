@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide",
 )
 
-DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 MAX_HISTORY_MESSAGES = 20    # nº máximo de mensagens enviadas ao modelo
 TOP_K_CHUNKS = 6             # nº de excertos recuperados por pergunta
 CHUNK_SIZE = 1200            # caracteres por excerto
