@@ -18,10 +18,10 @@ st.set_page_config(
     layout="wide",
 )
 
-DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
-MAX_HISTORY_MESSAGES = 20   # nº máximo de mensagens enviadas ao modelo
-TOP_K_CHUNKS = 6            # nº de excertos recuperados por pergunta
-CHUNK_SIZE = 1200           # caracteres por excerto
+DEFAULT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+MAX_HISTORY_MESSAGES = 20    # nº máximo de mensagens enviadas ao modelo
+TOP_K_CHUNKS = 6             # nº de excertos recuperados por pergunta
+CHUNK_SIZE = 1200            # caracteres por excerto
 CHUNK_OVERLAP = 200
 
 # ---------------------------------------------------------------------------
@@ -170,8 +170,7 @@ api_key = st.sidebar.text_input(
 )
 model_name = st.sidebar.text_input("Modelo Gemini", value=DEFAULT_MODEL)
 
-# O cliente recebe a chave diretamente (não se altera os.environ, que é partilhado
-# por todas as sessões do servidor).
+# O cliente recebe a chave diretamente
 client = genai.Client(api_key=api_key) if api_key else None
 
 st.sidebar.divider()
@@ -279,7 +278,6 @@ def build_contents(messages: list[dict], excerpts: list[dict]) -> list[types.Con
             ))
         parts.append(types.Part.from_text(text=m["content"]))
         contents.append(types.Content(role=role, parts=parts))
-    # A API exige que o primeiro turno seja do utilizador
     while contents and contents[0].role != "user":
         contents.pop(0)
     return contents
@@ -328,11 +326,9 @@ if prompt := st.chat_input("Escreve a tua dúvida sobre Neurofibromatose..."):
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            # Verificação de emergência ANTES de chamar o modelo
             if detect_emergency(prompt):
                 st.error(EMERGENCY_MESSAGE)
 
-            # Recuperação de excertos (usa a pergunta atual + a anterior, para seguimentos)
             user_msgs = [m["content"] for m in st.session_state.messages if m["role"] == "user"]
             query = " ".join(user_msgs[-2:])
             excerpts = retrieve(all_chunks, query) if all_chunks else []
@@ -355,5 +351,4 @@ if prompt := st.chat_input("Escreve a tua dúvida sobre Neurofibromatose..."):
                 st.session_state.messages.append({"role": "assistant", "content": reply})
             except Exception as e:
                 st.error(f"Ocorreu um erro ao comunicar com a API do Gemini: {e}")
-                # Remove a pergunta sem resposta para não corromper o histórico
                 st.session_state.messages.pop()
